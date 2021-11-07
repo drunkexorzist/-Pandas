@@ -27,8 +27,8 @@ values_arr23 = np.array(values_df)[:, 2:4]
 print(values_arr23)
 
 # визуализация данных
-#matplotlib.style.use('ggplot')
 plt.figure()
 x = np.linspace(values_arr2[0], values_arr23[values_arr2.size - 1], values_arr2.size)
 plot(x, values_arr2, 'g')
 plt.show()
+
