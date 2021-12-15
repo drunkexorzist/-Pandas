@@ -1,9 +1,7 @@
 import pandas as pd
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
 from pylab import plot
-import seaborn as sns
 
 # Подключаем и читаем файл с данными metal.csv
 values_df = pd.read_csv('metal.csv', delimiter=';')
@@ -28,7 +26,8 @@ print(values_arr23)
 
 # визуализация данных
 plt.figure()
+#
 x = np.linspace(values_arr2[0], values_arr23[values_arr2.size - 1], values_arr2.size)
-plot(x, values_arr2, 'g')
+plot(x, values_arr2, 'r')
 plt.show()
 
