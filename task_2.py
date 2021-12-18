@@ -52,6 +52,14 @@ def seven_point(points):
     points1[0] = (39 * points[0] + 8 * points1[1] - 4 * points1[2] - 4 * points1[3] + points1[4] + \
                   4 * points1[5] - 2 * points1[6]) / 42
     # Последние 3
+    points1[size - 3] = (-4 * points[size - 1] + 16 * points[size - 2] + 19 * points[size - 3] + \
+                        12 * points1[size - 4] + 2 * points1[size - 5] - 4 * points1[size - 6] + points1[size - 7]) / 42
+
+    points1[size - 2] = (8 * points[size - 1] + 19 * points[size - 2] + 16 * points1[size - 3] + \
+                        6 * points1[size - 4] - 4 * points1[size - 5] - 5 * points1[size - 6] + 4 * points1[size - 7]) / 42
+
+    points1[size - 1] = (39 * points[size - 1] + 8 * points1[size - 2] - 4 * points1[size - 2] - \
+                        4 * points1[size - 4] + points1[size - 5] + 4 * points1[size - 6] - 2 * points1[size - 7]) / 42
 
     return points1
 
@@ -88,17 +96,36 @@ err7 = sqerr(values_arr, points7)
 
 
 # Бля тут кароче надо заебашить красиво, а не как в примере
+# TODO: построить графики по 5 и 7 точкам
+# TODO: выполнить двух и трехкратное сглаживание???
+# TODO: Используя формулы второго порядка точности, выполните численное дифференцирование исходных,
+#                                                   сглаженных и не зашумлённых данных. Сравните полученные результаты.
+# TODO: исследовать модель с помощью ARIMA?????
 plt.figure()
 # <по оси абсцисс - дата>
 values_df.Date = values_df.Date.apply(lambda x: datetime.datetime.strptime(x,
                                                                            '%d.%m.%Y %H:%M'))
-plt.figure()
+
+fig, ax = plt.subplots(1, 3)
+plt.figure(figsize=(10, 10), dpi=300)
+
 values_df.index = values_df.Date
 values_arr = pd.DataFrame(np.array(values_df)[:, index])
 values_arr.index = values_df.Date
-plt.plot(values_arr, 'b', label='Исходный')
-points3_df = pd.DataFrame(points3)
-points3_df.index = values_df.Date
-plt.plot(points3_df, 'r', label='Сглаженый')
-plt.legend()
+
+# рисуеи графики сглаженности
+num = 1
+points_list = [points3, points5, points7]
+for i in range(len(points_list)):
+    num += 2
+    ax[i].plot(values_arr, 'b', label='Исходный')
+    points_df = pd.DataFrame(points_list[i])
+    points_df.index = values_df.Date
+    ax[i].plot(points_df, 'r', label='Сглаженый')
+    ax[i].legend()
+    ax[i].set_title(f"Cглаживание по {num} точкам")
+
+
+fig.set_figheight(8)
+fig.set_figwidth(30)
 plt.show()
