@@ -55,11 +55,11 @@ def seven_point(points):
                         12 * points1[size - 4] + 2 * points1[size - 5] - 4 * points1[size - 6] + points1[size - 7]) / 42
 
     points1[size - 2] = (8 * points[size - 1] + 19 * points[size - 2] + 16 * points1[size - 3] +
-                        6 * points1[size - 4] - 4 * points1[size - 5] - 5 * points1[size - 6] + 4 * points1[size - 7]) / 42
+                        6 * points1[size - 4] - 4 * points1[size - 5] - 5 * points1
+                         [size - 6] + 4 * points1[size - 7]) / 42
 
     points1[size - 1] = (39 * points[size - 1] + 8 * points1[size - 2] - 4 * points1[size - 2] -
                         4 * points1[size - 4] + points1[size - 5] + 4 * points1[size - 6] - 2 * points1[size - 7]) / 42
-
     return points1
 
 
@@ -118,6 +118,7 @@ for i in range(len(points_list)):
     points_df = pd.DataFrame(points_list[i])
     points_df.index = values_df.Date
     ax[i].plot(points_df, 'r', label='Сглаженый')
+    ax[i].grid(color='b', linestyle=':')
     ax[i].legend()
     ax[i].set_title(f"Cглаживание по {num} точкам")
 
