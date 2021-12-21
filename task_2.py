@@ -52,14 +52,15 @@ def seven_point(points):
                   4 * points1[5] - 2 * points1[6]) / 42
     # Последние 3
     points1[size - 3] = (-4 * points[size - 1] + 16 * points[size - 2] + 19 * points[size - 3] +
-                        12 * points1[size - 4] + 2 * points1[size - 5] - 4 * points1[size - 6] + points1[size - 7]) / 42
+                         12 * points1[size - 4] + 2 * points1[size - 5] - 4 * points1[size - 6] + points1[
+                             size - 7]) / 42
 
     points1[size - 2] = (8 * points[size - 1] + 19 * points[size - 2] + 16 * points1[size - 3] +
-                        6 * points1[size - 4] - 4 * points1[size - 5] - 5 * points1
+                         6 * points1[size - 4] - 4 * points1[size - 5] - 5 * points1
                          [size - 6] + 4 * points1[size - 7]) / 42
 
     points1[size - 1] = (39 * points[size - 1] + 8 * points1[size - 2] - 4 * points1[size - 2] -
-                        4 * points1[size - 4] + points1[size - 5] + 4 * points1[size - 6] - 2 * points1[size - 7]) / 42
+                         4 * points1[size - 4] + points1[size - 5] + 4 * points1[size - 6] - 2 * points1[size - 7]) / 42
     return points1
 
 
@@ -69,6 +70,25 @@ def sqerr(p1, p2):
     err1 = err1 ** 2
     err2 = sum(err1)
     return err2 / len(p1)
+
+
+# функция численного диффериенцирования
+def differentiation(points):
+    points1 = np.zeros(len(points))
+    size = len(points)
+
+    for i in range(1, len(points) - 1):
+        # шаг
+        h = (points[i] - points[0]) / i
+        # основной расчет без первой и последней
+        points1[i] = (points[i + 1] - points[i - 1]) / 2 * h
+
+    # первая
+    points1[0] = (-3 * points[0] + 4 * points[1] - points[2]) / 2 * h
+    # последняя
+    points1[size - 1] = (3 * points[size - 1] - 4 * points[size - 2] + points[size - 3]) / 2 * h
+
+    return points1
 
 
 # Читаем файл
@@ -93,23 +113,20 @@ points7 = seven_point(values_arr)
 # среднеквадратичная ошибка
 err7 = sqerr(values_arr, points7)
 
-
-# TODO: выполнить двух и трехкратное сглаживание???
-# TODO: Используя формулы второго порядка точности, выполните численное дифференцирование исходных,
-#                                                   сглаженных и не зашумлённых данных. Сравните полученные результаты.
-# TODO: исследовать модель с помощью ARIMA?????
-plt.figure()
+# TODO: 1. Выполить двух и трех кратное сглаживание (изобразить графически) DONE!
+#       2. Выполнить численное дифиренцирование исходных сглаженных и несглаженных данных
+#       3. Исследовать прогнозную модель ARIMA
 # <по оси абсцисс - дата>
 values_df.Date = values_df.Date.apply(lambda x: datetime.datetime.strptime(x, '%d.%m.%Y %H:%M'))
-
-fig, ax = plt.subplots(1, 3)
-plt.figure(figsize=(10, 10), dpi=300)
 
 values_df.index = values_df.Date
 values_arr = pd.DataFrame(np.array(values_df)[:, index])
 values_arr.index = values_df.Date
 
-# рисуеи графики сглаженности
+# рисуеи графики сглаженности по 3, 5, 7 точкам
+fig, ax = plt.subplots(1, 3)
+plt.figure(figsize=(10, 10), dpi=300)
+
 num = 1
 points_list = [points3, points5, points7]
 for i in range(len(points_list)):
@@ -125,3 +142,31 @@ for i in range(len(points_list)):
 fig.set_figheight(8)
 fig.set_figwidth(30)
 plt.show()
+
+# рисуеи графики 2 и 3 кратной сглаженнсоти
+fig, ax = plt.subplots(1, 3)
+plt.figure(figsize=(10, 10), dpi=300)
+
+p_1 = three_point(points3)
+p_2 = three_point(p_1)
+
+df = points3
+count = 1
+for i in range(3):
+    ax[i].plot(values_arr, 'r', label='Исходное')
+    p_df = pd.DataFrame(df)
+    p_df.index = values_df.Date
+    ax[i].plot(p_df, 'b', label=f'{count} кратное')
+    ax[i].grid(color='b', linestyle=':')
+    ax[i].legend()
+    ax[i].set_title(f"{count} кратное сглаживание")
+    df = three_point(df)
+    count += 1
+
+fig.set_figheight(8)
+fig.set_figwidth(30)
+plt.show()
+
+# численное дифириенцирование. Берем фрейм 3-х кратного сглаживания, так как нам шумы не нужны
+
+print(differentiation(df))
