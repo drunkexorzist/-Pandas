@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime
+from sklearn.metrics import mean_squared_error
+from math import sqrt
 
 
 # функция сглаживания (фильтрации) по 3-м точкам
@@ -48,6 +50,7 @@ def seven_point(points):
                   points1[5] + points1[6]) / 42
     points1[1] = (8 * points[0] + 19 * points[1] + 16 * points1[2] + 6 * points1[3] - 4 * points1[4] -
                   7 * points1[5] + 4 * points1[6]) / 42
+
     points1[0] = (39 * points[0] + 8 * points1[1] - 4 * points1[2] - 4 * points1[3] + points1[4] +
                   4 * points1[5] - 2 * points1[6]) / 42
     # Последние 3
@@ -73,20 +76,19 @@ def sqerr(p1, p2):
 
 
 # функция численного диффериенцирования
-def differentiation(points):
+def differentiation(points, h):
     points1 = np.zeros(len(points))
     size = len(points)
 
     for i in range(1, len(points) - 1):
-        # шаг
-        h = (points[i] - points[0]) / i
         # основной расчет без первой и последней
         points1[i] = (points[i + 1] - points[i - 1]) / 2 * h
 
     # первая
     points1[0] = (-3 * points[0] + 4 * points[1] - points[2]) / 2 * h
     # последняя
-    points1[size - 1] = (3 * points[size - 1] - 4 * points[size - 2] + points[size - 3]) / 2 * h
+    points1[size - 1] = (3 * points[size - 1] - 4 * points[size - 2] + points
+                                    [size - 3]) / 2 * h
 
     return points1
 
@@ -113,9 +115,6 @@ points7 = seven_point(values_arr)
 # среднеквадратичная ошибка
 err7 = sqerr(values_arr, points7)
 
-# TODO: 1. Выполить двух и трех кратное сглаживание (изобразить графически) DONE!
-#       2. Выполнить численное дифиренцирование исходных сглаженных и несглаженных данных
-#       3. Исследовать прогнозную модель ARIMA
 # <по оси абсцисс - дата>
 values_df.Date = values_df.Date.apply(lambda x: datetime.datetime.strptime(x, '%d.%m.%Y %H:%M'))
 
@@ -147,10 +146,7 @@ plt.show()
 fig, ax = plt.subplots(1, 3)
 plt.figure(figsize=(10, 10), dpi=300)
 
-p_1 = three_point(points3)
-p_2 = three_point(p_1)
-
-df = points3
+df = points7
 count = 1
 for i in range(3):
     ax[i].plot(values_arr, 'r', label='Исходное')
@@ -167,6 +163,48 @@ fig.set_figheight(8)
 fig.set_figwidth(30)
 plt.show()
 
-# численное дифириенцирование. Берем фрейм 3-х кратного сглаживания, так как нам шумы не нужны
+# численное дифириенцирование
 
-print(differentiation(df))
+a = pd.Series(list(values_arr[0]))
+b = pd.Series(list(df))
+
+plt.figure()
+plt.plot(values_arr, 'b', label="Исходные")
+
+points_df_2 = pd.DataFrame(df)
+points_df_2.index = values_df.Date
+plt.plot(points_df_2, 'r', label="3-x кратное сглаживаение")
+
+points_df_dif = pd.DataFrame(differentiation(df, sqerr(a, b)))
+points_df_dif.index = values_df.Date
+plt.plot(points_df_dif, 'y', label="Численное дифириенцирование")
+plt.grid(color='b', linestyle=':')
+plt.legend()
+plt.show()
+
+# ARIMA
+
+# хз чо брать, возьмем 3-х кратно сглаженный фрейм
+test_df = df
+test_df = test_df.astype('float32')
+
+x = int(len(test_df) * 0.50)
+train, test = test_df[0:x], test_df[x:]
+
+# CKO
+predictions = train
+mse = mean_squared_error(test, predictions)
+rmse = sqrt(mse)
+print(f'CКО: {rmse}')
+
+history = [x for x in train]
+predictions = list()
+for i in range(len(test)):
+    # predict
+    yhat = rmse
+    predictions.append(yhat)
+    # наблюдение
+    obs = test[i]
+    history.append(obs)
+print('>Прогноз = %.3f, Ожидаемое значение = %3.f' % (yhat, obs))
+
