@@ -183,8 +183,7 @@ plt.legend()
 plt.show()
 
 # ARIMA
-
-# хз чо брать, возьмем 3-х кратно сглаженный фрейм
+# возьмем 3-х кратно сглаженный фрейм
 test_df = df
 test_df = test_df.astype('float32')
 

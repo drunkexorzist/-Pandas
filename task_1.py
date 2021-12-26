@@ -26,7 +26,6 @@ print(values_arr23)
 
 # визуализация данных
 plt.figure()
-#
 x = np.linspace(values_arr2[0], values_arr23[values_arr2.size - 1], values_arr2.size)
 plot(x, values_arr2, 'r')
 plt.show()
